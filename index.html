@@ -135,6 +135,9 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       transition: none;
       user-select: none;
+      min-width: 180px;
+      text-align: center;
+      white-space: nowrap;
     }
 
     .btn-no.escaping {
@@ -296,21 +299,22 @@
     const mainCard = document.getElementById('mainCard');
 
     const noTexts = [
-      'No 😢', 'Think again! 🥺', 'Are you sure? 😭', 'Please? 🙏',
-      'Don\'t do this! 💔', 'Reconsider! 😿', 'Really?! 😩',
-      'Change your mind! 🥹', 'Not funny! 😤', 'Try again! 😅',
-      'Wrong button! 👉', 'You sure? 🫣', 'Noooo! 😫'
+      'No 😢', 'Think again 🥺', 'Sure? 😭', 'Please? 🙏',
+      'Don\'t! 💔', 'Nope! 😿', 'Really?! 😩',
+      'Why not? 🥹', 'Not funny 😤', 'Retry! 😅',
+      'Wrong one 👉', 'You sure? 🫣', 'Noooo 😫'
     ];
     let noTextIndex = 0;
 
     function escapeNoButton() {
-      noTextIndex = (noTextIndex + 1) % noTexts.length;
-      noBtn.textContent = noTexts[noTextIndex];
       if (!noBtn.classList.contains('escaping')) {
         noBtn.classList.add('escaping');
       }
+      noTextIndex = (noTextIndex + 1) % noTexts.length;
+      noBtn.textContent = noTexts[noTextIndex];
 
       const containerRect = buttonsContainer.getBoundingClientRect();
+      // Force reflow so offsetWidth reflects new text
       const btnW = noBtn.offsetWidth;
       const btnH = noBtn.offsetHeight;
       const padding = 10;
