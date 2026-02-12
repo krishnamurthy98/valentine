@@ -55,8 +55,8 @@
       backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 100, 150, 0.2);
       box-shadow: 0 20px 60px rgba(200, 50, 100, 0.15), 0 0 100px rgba(255, 100, 150, 0.05);
-      max-width: 500px;
-      width: 90%;
+      max-width: 750px;
+      width: 92%;
       animation: fadeInUp 1s ease-out;
     }
 
@@ -101,8 +101,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 30px;
-      min-height: 60px;
+      gap: 40px;
+      height: 180px;
       position: relative;
     }
 
@@ -133,9 +133,13 @@
       background: rgba(255, 255, 255, 0.1);
       color: #ccc;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      position: absolute;
       transition: none;
       user-select: none;
+    }
+
+    .btn-no.escaping {
+      position: absolute;
+      z-index: 20;
     }
 
     /* ===== CELEBRATION SCREEN ===== */
@@ -250,8 +254,8 @@
     </div>
     <p class="question">Hiru, will you be my Valentine?</p>
     <div class="buttons" id="buttonsContainer">
-      <button class="btn btn-yes" id="yesBtn">Yes</button>
-      <button class="btn btn-no" id="noBtn">No</button>
+      <button class="btn btn-yes" id="yesBtn">Yes 💖</button>
+      <button class="btn btn-no" id="noBtn">No 😢</button>
     </div>
   </div>
 
@@ -260,6 +264,8 @@
     <div class="confetti-container" id="confettiContainer"></div>
     <div class="yay-text">YAY!</div>
     <div class="celebration-subtitle">I knew you'd say yes!</div>
+    <div class="celebration-subtitle" style="animation-delay: 0.8s; margin-bottom: 10px;">You're the best thing that's ever happened to me.</div>
+    <div class="celebration-subtitle" style="animation-delay: 1.2s;">I love you baby! &#10084;&#65039;</div>
     <div class="celebration-hearts">&#128151; &#128152; &#128157; &#128150; &#128155;</div>
   </div>
 
@@ -283,34 +289,71 @@
     setInterval(createFloatingHeart, 500);
     for (let i = 0; i < 15; i++) setTimeout(createFloatingHeart, i * 200);
 
-    // --- No button escape logic ---
+    // --- Button references ---
+    const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
     const buttonsContainer = document.getElementById('buttonsContainer');
     const mainCard = document.getElementById('mainCard');
 
+    const noTexts = [
+      'No 😢', 'Think again! 🥺', 'Are you sure? 😭', 'Please? 🙏',
+      'Don\'t do this! 💔', 'Reconsider! 😿', 'Really?! 😩',
+      'Change your mind! 🥹', 'Not funny! 😤', 'Try again! 😅',
+      'Wrong button! 👉', 'You sure? 🫣', 'Noooo! 😫'
+    ];
+    let noTextIndex = 0;
+
     function escapeNoButton() {
-      const card = mainCard.getBoundingClientRect();
+      noTextIndex = (noTextIndex + 1) % noTexts.length;
+      noBtn.textContent = noTexts[noTextIndex];
+      if (!noBtn.classList.contains('escaping')) {
+        noBtn.classList.add('escaping');
+      }
+
+      const containerRect = buttonsContainer.getBoundingClientRect();
       const btnW = noBtn.offsetWidth;
       const btnH = noBtn.offsetHeight;
-      const padding = 20;
+      const padding = 10;
 
-      const maxX = card.width - btnW - padding;
-      const maxY = 120;
+      // Yes button position relative to the buttons container
+      const yesRect = yesBtn.getBoundingClientRect();
+      const yesLeft = yesRect.left - containerRect.left;
+      const yesTop = yesRect.top - containerRect.top;
+      const yesBuffer = 30;
 
-      const randX = padding + Math.random() * maxX - card.width / 2 + btnW / 2;
-      const randY = -(Math.random() * maxY);
+      // Bounds within the buttons container
+      const maxX = buttonsContainer.offsetWidth - btnW - padding;
+      const maxY = buttonsContainer.offsetHeight - btnH - padding;
 
-      noBtn.style.transform = `translate(${randX}px, ${randY}px)`;
+      // Try positions until one doesn't overlap Yes button
+      let posX, posY, attempts = 0;
+      do {
+        posX = padding + Math.random() * (maxX - padding);
+        posY = padding + Math.random() * (maxY - padding);
+        attempts++;
+      } while (attempts < 100 && rectsOverlap(
+        posX, posY, btnW, btnH,
+        yesLeft - yesBuffer, yesTop - yesBuffer,
+        yesRect.width + yesBuffer * 2, yesRect.height + yesBuffer * 2
+      ));
+
+      noBtn.style.left = posX + 'px';
+      noBtn.style.top = posY + 'px';
     }
 
+    function rectsOverlap(x1, y1, w1, h1, x2, y2, w2, h2) {
+      return !(x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1);
+    }
+
+    // Use both mouseenter and mousemove so cursor can never rest on it
     noBtn.addEventListener('mouseenter', escapeNoButton);
+    noBtn.addEventListener('mousemove', escapeNoButton);
     noBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       escapeNoButton();
     });
 
     // --- Yes button click ---
-    const yesBtn = document.getElementById('yesBtn');
     const celebration = document.getElementById('celebration');
 
     yesBtn.addEventListener('click', () => {
